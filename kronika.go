@@ -29,8 +29,15 @@ func Every(ctx context.Context, start time.Time, interval time.Duration) <-chan 
 		timer := time.NewTimer(time.Until(start))
 		defer timer.Stop() // Make sure to stop the timer when we're done
 
-		t := <-timer.C
-		stream <- t
+		// Listen on both the timer and the context done channel.
+		// Useful if the context is closed before the first timer
+		select {
+		case t := <-timer.C:
+			stream <- t
+		case <-ctx.Done():
+			close(stream)
+			return
+		}
 
 		// Open a new ticker
 		ticker := time.NewTicker(interval)

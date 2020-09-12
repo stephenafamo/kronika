@@ -96,3 +96,21 @@ func TestEvery(t *testing.T) {
 		t.Fatalf("Ticker should have run %d times but ran %d times.", noOfTicks, i)
 	}
 }
+
+func TestEveryCancelBeforeFistEvent(t *testing.T) {
+	interval := 5 * time.Second
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel() // cancel immediately
+
+	start := time.Now()
+
+	for range Every(ctx, start, interval) {
+	}
+
+	length := time.Now().Sub(start)
+	if length > time.Millisecond*10 {
+		t.Fatalf(
+			"Ticker should have stopped almost immediately, but took %dms",
+			length/time.Millisecond)
+	}
+}
