@@ -18,7 +18,8 @@ func Every(ctx context.Context, start time.Time, interval time.Duration) <-chan 
 			total := diff - interval
 			times := total / interval * -1
 
-			start = start.Add(times * interval)
+			// see https://github.com/charithe/durationcheck
+			start = start.Add(time.Duration(times.Nanoseconds()*interval.Nanoseconds()) * time.Nanosecond)
 		}
 	}
 
